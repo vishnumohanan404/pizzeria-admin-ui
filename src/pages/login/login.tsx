@@ -37,6 +37,14 @@ const LoginPage = () => {
     enabled: false,
   });
 
+  const { mutate: logoutMutate } = useMutation({
+    mutationKey: ["logout"],
+    mutationFn: logout,
+    onSuccess: async () => {
+      logOut();
+    },
+  });
+
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ["login"],
     mutationFn: loginUser,
@@ -44,8 +52,7 @@ const LoginPage = () => {
       const selfDataPromise = await refetch();
       // logout or redirect to client ui if customer role
       if (!isAllowed(selfDataPromise.data)) {
-        await logout();
-        logOut();
+        logoutMutate();
         return;
       }
       setUser(selfDataPromise.data);
