@@ -13,8 +13,9 @@ import { LockFilled, LockOutlined, UserOutlined } from "@ant-design/icons";
 import Logo from "../../components/icons/Logo";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Credentials } from "../../types";
-import { login, self } from "../../http/api";
+import { login, logout, self } from "../../http/api";
 import { useAuthStore } from "../../store";
+import { usePermission } from "../../hooks/usePermissions";
 
 const loginUser = async (credentials: Credentials) => {
   // server call
@@ -27,9 +28,10 @@ const getSelf = async () => {
 };
 
 const LoginPage = () => {
-  const { setUser } = useAuthStore();
+  const { isAllowed } = usePermission();
+  const { setUser, logOut } = useAuthStore();
 
-  const { data: selfData, refetch } = useQuery({
+  const { refetch } = useQuery({
     queryKey: ["self"],
     queryFn: getSelf,
     enabled: false,
@@ -40,6 +42,12 @@ const LoginPage = () => {
     mutationFn: loginUser,
     onSuccess: async () => {
       const selfDataPromise = await refetch();
+      // logout or redirect to client ui if customer role
+      if (!isAllowed(selfDataPromise.data)) {
+        await logout();
+        logOut();
+        return;
+      }
       setUser(selfDataPromise.data);
     },
   });
