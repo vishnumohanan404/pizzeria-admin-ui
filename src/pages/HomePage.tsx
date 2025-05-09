@@ -86,12 +86,12 @@ function HomePage() {
         <Col span={12}>
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Card bordered={false}>
+              <Card variant={"outlined"}>
                 <Statistic title="Total orders" value={52} />
               </Card>
             </Col>
             <Col span={12}>
-              <Card bordered={false}>
+              <Card variant={"outlined"}>
                 <Statistic
                   title="Total sale"
                   value={70000}
@@ -103,14 +103,14 @@ function HomePage() {
             <Col span={24}>
               <Card
                 title={<CardTitle title="Sales" PrefixIcon={BarChartIcon} />}
-                bordered={false}
+                variant={"outlined"}
               ></Card>
             </Col>
           </Row>
         </Col>
         <Col span={12}>
           <Card
-            bordered={false}
+            variant={"outlined"}
             title={<CardTitle title="Recent orders" PrefixIcon={BasketIcon} />}
           >
             <List

@@ -31,11 +31,6 @@ const columns = [
     dataIndex: "role",
     key: "role",
   },
-  {
-    title: "Role",
-    dataIndex: "role",
-    key: "role",
-  },
 ];
 
 const Users = () => {
@@ -64,8 +59,8 @@ const Users = () => {
         />
         {isLoading && <div>Loading</div>}
         {isError && <div>{error.message}</div>}
-        <UsersFilter />
-        <Table dataSource={users} columns={columns} />
+        <UsersFilter onFilterChange={() => {}} />
+        <Table dataSource={users} columns={columns} rowKey={"id"} />
       </Space>
       {/* {users && (
         <div>
