@@ -1,4 +1,4 @@
-import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
+import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,7 @@ import { User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
+import UserForm from "./forms/UserForm";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -39,6 +40,9 @@ const Users = () => {
   if (user?.role !== "admin") {
     return <Navigate to="/" replace={true} />;
   }
+  const {
+    token: { colorBgLayout },
+  } = theme.useToken();
   const {
     data: users,
     isLoading,
@@ -76,6 +80,7 @@ const Users = () => {
           width={720}
           destroyOnClose={true}
           open={drawerOpen}
+          styles={{ body: { background: colorBgLayout } }}
           onClose={() => {
             setDrawerOpen(false);
             console.log("close");
@@ -86,7 +91,11 @@ const Users = () => {
               <Button type="primary">Submit</Button>
             </Space>
           }
-        ></Drawer>
+        >
+          <Form layout="vertical">
+            <UserForm />
+          </Form>
+        </Drawer>
       </Space>
       {/* {users && (
         <div>
