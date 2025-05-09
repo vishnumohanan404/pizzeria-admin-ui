@@ -8,6 +8,7 @@ import Users from "./pages/users/Users";
 import Restaurants from "./pages/restaurants/Restaurants";
 import Products from "./pages/products/Products";
 import Promos from "./pages/promos/Promos";
+import Tenants from "./pages/tenants/Tenant";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
           {
             path: "/users",
             element: <Users />,
+          },
+          {
+            path: "/restaurants",
+            element: <Tenants />,
           },
           {
             path: "/restaurants",
