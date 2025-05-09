@@ -1,9 +1,14 @@
 import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
 import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getUsers } from "../../http/api";
-import { User } from "../../types";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { createUser, getUsers } from "../../http/api";
+import { CreateUserData, User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
@@ -36,10 +41,26 @@ const columns = [
 ];
 
 const Users = () => {
+  const [form] = Form.useForm();
   const { user } = useAuthStore();
   if (user?.role !== "admin") {
     return <Navigate to="/" replace={true} />;
   }
+  const queryClient = useQueryClient();
+  const { mutate: userMutation } = useMutation({
+    mutationKey: ["user"],
+    mutationFn: async (data: CreateUserData) =>
+      createUser(data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    await userMutation(form.getFieldsValue());
+    setDrawerOpen(false);
+    form.resetFields();
+  };
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -83,16 +104,25 @@ const Users = () => {
           styles={{ body: { background: colorBgLayout } }}
           onClose={() => {
             setDrawerOpen(false);
-            console.log("close");
+            form.resetFields();
           }}
           extra={
             <Space>
-              <Button>Cancel</Button>
-              <Button type="primary">Submit</Button>
+              <Button
+                onClick={() => {
+                  setDrawerOpen(false);
+                  form.resetFields();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button type="primary" onClick={onHandleSubmit}>
+                Submit
+              </Button>
             </Space>
           }
         >
-          <Form layout="vertical">
+          <Form layout="vertical" form={form}>
             <UserForm />
           </Form>
         </Drawer>
