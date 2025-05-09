@@ -1,11 +1,12 @@
-import { Breadcrumb, Space, Table } from "antd";
-import { RightOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Drawer, Space, Table } from "antd";
+import { PlusOutlined, RightOutlined } from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "../../http/api";
 import { User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
+import { useState } from "react";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -47,6 +48,7 @@ const Users = () => {
     queryKey: ["users"],
     queryFn: () => getUsers().then((res) => res.data),
   });
+  const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <>
       <Space direction="vertical" size={"large"} style={{ width: "100%" }}>
@@ -59,8 +61,32 @@ const Users = () => {
         />
         {isLoading && <div>Loading</div>}
         {isError && <div>{error.message}</div>}
-        <UsersFilter onFilterChange={() => {}} />
+        <UsersFilter onFilterChange={() => {}}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setDrawerOpen(true)}
+          >
+            Add User
+          </Button>
+        </UsersFilter>
         <Table dataSource={users} columns={columns} rowKey={"id"} />
+        <Drawer
+          title="Create User"
+          width={720}
+          destroyOnClose={true}
+          open={drawerOpen}
+          onClose={() => {
+            setDrawerOpen(false);
+            console.log("close");
+          }}
+          extra={
+            <Space>
+              <Button>Cancel</Button>
+              <Button type="primary">Submit</Button>
+            </Space>
+          }
+        ></Drawer>
       </Space>
       {/* {users && (
         <div>
