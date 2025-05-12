@@ -1,7 +1,23 @@
-import { Breadcrumb, Button, Drawer, Form, Space, Table, theme } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  Breadcrumb,
+  Button,
+  Drawer,
+  Flex,
+  Form,
+  Space,
+  Spin,
+  Table,
+  theme,
+  Typography,
+} from "antd";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link, Navigate } from "react-router-dom";
 import {
+  keepPreviousData,
   QueryClient,
   useMutation,
   useQuery,
@@ -71,7 +87,7 @@ const Users = () => {
   });
   const {
     data: users,
-    isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
@@ -82,21 +98,32 @@ const Users = () => {
       ).toString();
       return getUsers(queryString).then((res) => res.data);
     },
+    placeholderData: keepPreviousData,
   });
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <>
       <Space direction="vertical" size={"large"} style={{ width: "100%" }}>
-        <Breadcrumb
-          separator={<RightOutlined />}
-          items={[
-            { title: <Link to={"/"}>Dashboard</Link> },
-            { title: "Users" },
-          ]}
-        />
-        {isLoading && <div>Loading</div>}
-        {isError && <div>{error.message}</div>}
+        <Flex justify="space-between">
+          <Breadcrumb
+            separator={<RightOutlined />}
+            items={[
+              { title: <Link to={"/"}>Dashboard</Link> },
+              { title: "Users" },
+            ]}
+          />
+          {isFetching && (
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+            />
+          )}
+          {isError && (
+            <Typography.Text type="danger"> 
+              {error instanceof Error ? error.message : "Something went wrong"}
+            </Typography.Text>
+          )}
+        </Flex>
         <UsersFilter onFilterChange={() => {}}>
           <Button
             type="primary"
