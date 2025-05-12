@@ -13,6 +13,7 @@ import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
 import UserForm from "./forms/UserForm";
+import { PER_PAGE } from "../../constants";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -64,15 +65,25 @@ const Users = () => {
   const {
     token: { colorBgLayout },
   } = theme.useToken();
+  const [queryParams, setQueryParams] = useState({
+    perPage: PER_PAGE,
+    currentPage: 1,
+  });
   const {
     data: users,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => getUsers().then((res) => res.data),
+    queryKey: ["users", queryParams],
+    queryFn: () => {
+      const queryString = new URLSearchParams(
+        queryParams as unknown as Record<string, string>
+      ).toString();
+      return getUsers(queryString).then((res) => res.data);
+    },
   });
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   return (
     <>
@@ -95,7 +106,22 @@ const Users = () => {
             Add User
           </Button>
         </UsersFilter>
-        <Table dataSource={users} columns={columns} rowKey={"id"} />
+        <Table
+          dataSource={users?.data}
+          columns={columns}
+          rowKey={"id"}
+          pagination={{
+            total: users?.total,
+            pageSize: queryParams.perPage,
+            current: queryParams.currentPage,
+            onChange: (page) => {
+              setQueryParams((prev) => ({
+                ...prev,
+                currentPage: page,
+              }));
+            },
+          }}
+        />
         <Drawer
           title="Create User"
           width={720}
@@ -127,16 +153,6 @@ const Users = () => {
           </Form>
         </Drawer>
       </Space>
-      {/* {users && (
-        <div>
-          <h1>Users</h1>
-          <ul>
-            {users.map((user: User) => (
-              <li key={user.id}>{user.firstName}</li>
-            ))}
-          </ul>
-        </div>
-      )} */}
     </>
   );
 };
