@@ -29,7 +29,7 @@ import UsersFilter from "./UsersFilter";
 import { useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import { PER_PAGE } from "../../constants";
-import { debounce, set } from "lodash";
+import { debounce } from "lodash";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -54,6 +54,14 @@ const columns = [
     title: "Role",
     dataIndex: "role",
     key: "role",
+  },
+  {
+    title: "Restaurant",
+    dataIndex: "tenant",
+    key: "tenant",
+    render: (_text: string, record: User) => {
+      return <div>{record.tenant?.name}</div>;
+    },
   },
 ];
 

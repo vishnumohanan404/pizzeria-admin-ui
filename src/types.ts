@@ -10,6 +10,7 @@ export type User = {
   lastName: string;
   createdAt: string;
   updatedAt: string;
+  tenant: Tenant | null;
 };
 
 export type CreateUserData = {
