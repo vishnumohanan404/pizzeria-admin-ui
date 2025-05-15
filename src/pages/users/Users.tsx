@@ -26,9 +26,10 @@ import { createUser, getUsers } from "../../http/api";
 import { CreateUserData, FieldData, User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import { PER_PAGE } from "../../constants";
+import { debounce, set } from "lodash";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -82,14 +83,23 @@ const Users = () => {
     form.resetFields();
   };
 
+  const debouncedQUpdate = useMemo(() => {
+    return debounce((value: string | undefined) => {
+      setQueryParams((prev) => ({ ...prev, q: value }));
+    }, 1000);
+  }, []);
+
   const onFilterChange = async (changedFields: FieldData[]) => {
     const changedFilterFields = changedFields
       .map((item) => ({
         [item.name[0]]: item.value,
       }))
       .reduce((acc, item) => ({ ...acc, ...item }), {});
-    console.log(changedFilterFields);
-    setQueryParams((prev) => ({ ...prev, ...changedFilterFields }));
+    if ("q" in changedFilterFields) {
+      debouncedQUpdate(changedFilterFields.q);
+    } else {
+      setQueryParams((prev) => ({ ...prev, ...changedFilterFields }));
+    }
   };
 
   const {
