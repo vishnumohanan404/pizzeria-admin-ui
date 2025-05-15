@@ -18,13 +18,12 @@ import {
 import { Link, Navigate } from "react-router-dom";
 import {
   keepPreviousData,
-  QueryClient,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { createUser, getUsers } from "../../http/api";
-import { CreateUserData, User } from "../../types";
+import { CreateUserData, FieldData, User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
 import { useState } from "react";
@@ -59,10 +58,13 @@ const columns = [
 
 const Users = () => {
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
+
   const { user } = useAuthStore();
   if (user?.role !== "admin") {
     return <Navigate to="/" replace={true} />;
   }
+
   const queryClient = useQueryClient();
   const { mutate: userMutation } = useMutation({
     mutationKey: ["user"],
@@ -72,12 +74,24 @@ const Users = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
+
   const onHandleSubmit = async () => {
     await form.validateFields();
     await userMutation(form.getFieldsValue());
     setDrawerOpen(false);
     form.resetFields();
   };
+
+  const onFilterChange = async (changedFields: FieldData[]) => {
+    const changedFilterFields = changedFields
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+    console.log(changedFilterFields);
+    setQueryParams((prev) => ({ ...prev, ...changedFilterFields }));
+  };
+
   const {
     token: { colorBgLayout },
   } = theme.useToken();
@@ -93,8 +107,12 @@ const Users = () => {
   } = useQuery({
     queryKey: ["users", queryParams],
     queryFn: () => {
+      const filteredParams = Object.fromEntries(
+        Object.entries(queryParams).filter((item) => !!item[1])
+      );
+
       const queryString = new URLSearchParams(
-        queryParams as unknown as Record<string, string>
+        filteredParams as unknown as Record<string, string>
       ).toString();
       return getUsers(queryString).then((res) => res.data);
     },
@@ -115,24 +133,26 @@ const Users = () => {
           />
           {isFetching && (
             <Spin
-              indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+              indicator={<LoadingOutlined style={{ fontSize: "24" }} spin />}
             />
           )}
           {isError && (
-            <Typography.Text type="danger"> 
+            <Typography.Text type="danger">
               {error instanceof Error ? error.message : "Something went wrong"}
             </Typography.Text>
           )}
         </Flex>
-        <UsersFilter onFilterChange={() => {}}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
-          >
-            Add User
-          </Button>
-        </UsersFilter>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
+          <UsersFilter>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerOpen(true)}
+            >
+              Add User
+            </Button>
+          </UsersFilter>
+        </Form>
         <Table
           dataSource={users?.data}
           columns={columns}
