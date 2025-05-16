@@ -22,14 +22,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createUser, getUsers } from "../../http/api";
+import { createUser, getUsers, updateUser } from "../../http/api";
 import { CreateUserData, FieldData, User } from "../../types";
 import { useAuthStore } from "../../store";
 import UsersFilter from "./UsersFilter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import { PER_PAGE } from "../../constants";
-import { debounce } from "lodash";
+import { debounce, set, update } from "lodash";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },
@@ -69,12 +69,17 @@ const Users = () => {
   const [form] = Form.useForm();
   const [filterForm] = Form.useForm();
 
+  const [currentEditingUser, setCurrentEditingUser] = useState<User | null>(
+    null
+  );
+
   const { user } = useAuthStore();
   if (user?.role !== "admin") {
     return <Navigate to="/" replace={true} />;
   }
 
   const queryClient = useQueryClient();
+
   const { mutate: userMutation } = useMutation({
     mutationKey: ["user"],
     mutationFn: async (data: CreateUserData) =>
@@ -84,11 +89,27 @@ const Users = () => {
     },
   });
 
+  const { mutate: updateUserMutation } = useMutation({
+    mutationKey: ["update-user"],
+    mutationFn: async (data: CreateUserData) =>
+      updateUser(data, currentEditingUser!.id).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      return;
+    },
+  });
+
   const onHandleSubmit = async () => {
     await form.validateFields();
-    await userMutation(form.getFieldsValue());
-    setDrawerOpen(false);
+    const isEditMode = !!currentEditingUser;
+    if (isEditMode) {
+      await updateUserMutation(form.getFieldsValue());
+    } else {
+      await userMutation(form.getFieldsValue());
+    }
     form.resetFields();
+    setCurrentEditingUser(null);
+    setDrawerOpen(false);
   };
 
   const debouncedQUpdate = useMemo(() => {
@@ -142,6 +163,17 @@ const Users = () => {
   });
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  useEffect(() => {
+    if (currentEditingUser) {
+      setDrawerOpen(true);
+      form.setFieldsValue({
+        ...currentEditingUser,
+        tenantId: currentEditingUser.tenant?.id,
+      });
+    }
+    return () => {};
+  }, [currentEditingUser]);
+
   return (
     <>
       <Space direction="vertical" size={"large"} style={{ width: "100%" }}>
@@ -177,7 +209,26 @@ const Users = () => {
         </Form>
         <Table
           dataSource={users?.data}
-          columns={columns}
+          columns={[
+            ...columns,
+            {
+              title: "Actions",
+              render: (_: string, record: User) => {
+                return (
+                  <Space>
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        setCurrentEditingUser(record);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </Space>
+                );
+              },
+            },
+          ]}
           rowKey={"id"}
           pagination={{
             total: users?.total,
@@ -194,13 +245,14 @@ const Users = () => {
           }}
         />
         <Drawer
-          title="Create User"
+          title={!!currentEditingUser ? "Edit User" : "Add User"}
           width={720}
           destroyOnClose={true}
           open={drawerOpen}
           styles={{ body: { background: colorBgLayout } }}
           onClose={() => {
             setDrawerOpen(false);
+            setCurrentEditingUser(null);
             form.resetFields();
           }}
           extra={
@@ -220,7 +272,7 @@ const Users = () => {
           }
         >
           <Form layout="vertical" form={form}>
-            <UserForm />
+            <UserForm isEditMode={!!currentEditingUser} />
           </Form>
         </Drawer>
       </Space>
