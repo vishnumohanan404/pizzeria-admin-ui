@@ -12,12 +12,14 @@ import {
 } from "antd";
 import { getCategories, getTenants } from "../../http/api";
 import { Category, Tenant } from "../../types";
+import { useAuthStore } from "../../store";
 
 type ProductsFilterProps = {
   children?: React.ReactNode;
 };
 
 const ProductFilter = ({ children }: ProductsFilterProps) => {
+  const { user } = useAuthStore();
   const { data: restaurants } = useQuery({
     queryKey: ["restaurants"],
     queryFn: async () => {
@@ -55,21 +57,24 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name={"tenantId"} style={{ marginBottom: 0 }}>
-                <Select
-                  style={{ width: "100%" }}
-                  placeholder="Select Restaurant"
-                  allowClear={true}
-                >
-                  {restaurants?.data.map((restaurant: Tenant) => (
-                    <Select.Option key={restaurant.id} value={restaurant.id}>
-                      {restaurant.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
+            {user!.role === "admin" && (
+              <Col span={6}>
+                <Form.Item name={"tenantId"} style={{ marginBottom: 0 }}>
+                  <Select
+                    style={{ width: "100%" }}
+                    placeholder="Select Restaurant"
+                    allowClear={true}
+                  >
+                    {restaurants?.data.map((restaurant: Tenant) => (
+                      <Select.Option key={restaurant.id} value={restaurant.id}>
+                        {restaurant.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            )}
+
             <Col span={6}>
               <Space>
                 <Form.Item name={"isPublish"}>
