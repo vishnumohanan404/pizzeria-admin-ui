@@ -29,7 +29,7 @@ import UsersFilter from "./UsersFilter";
 import { useEffect, useMemo, useState } from "react";
 import UserForm from "./forms/UserForm";
 import { PER_PAGE } from "../../constants";
-import { debounce, set, update } from "lodash";
+import { debounce } from "lodash";
 
 const columns = [
   { title: "ID", key: "id", dataIndex: "id" },

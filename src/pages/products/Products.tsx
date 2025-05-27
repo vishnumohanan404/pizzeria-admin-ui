@@ -5,20 +5,25 @@ import {
   Form,
   Image,
   Space,
+  Spin,
   Table,
   Tag,
   Typography,
 } from "antd";
-import { PlusOutlined, RightOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import ProductFilter from "./ProductFilter";
-import { Product } from "../../types";
+import { FieldData, Product } from "../../types";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getProducts } from "../../http/api";
 import { PER_PAGE } from "../../constants";
-import { useState } from "react";
-import { render } from "@testing-library/react";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
+import { debounce } from "lodash";
 
 const columns = [
   {
@@ -74,10 +79,15 @@ const columns = [
 const Products = () => {
   const [filterForm] = Form.useForm();
   const [queryParams, setQueryParams] = useState({
-    perPage: PER_PAGE,
-    currentPage: 1,
+    limit: PER_PAGE,
+    page: 1,
   });
-  const { data: products } = useQuery({
+  const {
+    data: products,
+    isFetching,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", queryParams],
     queryFn: async () => {
       const filteredParams = Object.fromEntries(
@@ -91,6 +101,29 @@ const Products = () => {
     placeholderData: keepPreviousData,
   });
 
+  const debouncedQUpdate = useMemo(() => {
+    return debounce((value: string | undefined) => {
+      setQueryParams((prev) => ({ ...prev, q: value, page: 1 }));
+    }, 500);
+  }, []);
+  const onFilterChange = async (changedFields: FieldData[]) => {
+    console.log(changedFields);
+    const changedFilterFields = changedFields
+      .map((item) => ({
+        [item.name[0]]: item.value,
+      }))
+      .reduce((acc, item) => ({ ...acc, ...item }), {});
+    if ("q" in changedFilterFields) {
+      debouncedQUpdate(changedFilterFields.q);
+    } else {
+      setQueryParams((prev) => ({
+        ...prev,
+        ...changedFilterFields,
+        page: 1,
+      }));
+    }
+  };
+  console.log("products.total :>> ", products);
   return (
     <>
       <Space direction="vertical" size={"large"} style={{ width: "100%" }}>
@@ -102,8 +135,18 @@ const Products = () => {
               { title: "Products" },
             ]}
           />
+          {isFetching && (
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: "24" }} spin />}
+            />
+          )}
+          {isError && (
+            <Typography.Text type="danger">
+              {error instanceof Error ? error.message : "Something went wrong"}
+            </Typography.Text>
+          )}
         </Flex>
-        <Form form={filterForm} onFieldsChange={() => {}}>
+        <Form form={filterForm} onFieldsChange={onFilterChange}>
           <ProductFilter>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => {}}>
               Add Product
@@ -127,15 +170,15 @@ const Products = () => {
               },
             },
           ]}
-          rowKey={"id"}
+          rowKey={"name"}
           pagination={{
             total: products?.total,
-            pageSize: queryParams.perPage,
-            current: queryParams.currentPage,
+            pageSize: queryParams.limit,
+            current: queryParams.page,
             onChange: (page) => {
               setQueryParams((prev) => ({
                 ...prev,
-                currentPage: page,
+                page: page,
               }));
             },
             showTotal: (total: number, range: number[]) =>

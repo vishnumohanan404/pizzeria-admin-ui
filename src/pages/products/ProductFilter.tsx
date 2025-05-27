@@ -30,7 +30,6 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
       return getCategories();
     },
   });
-
   return (
     <Card>
       <Row justify={"space-between"}>
@@ -42,7 +41,7 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name={"category"} style={{ marginBottom: 0 }}>
+              <Form.Item name={"categoryId"} style={{ marginBottom: 0 }}>
                 <Select
                   style={{ width: "100%" }}
                   placeholder="Select Category"
@@ -57,7 +56,7 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
               </Form.Item>
             </Col>
             <Col span={6}>
-              <Form.Item name={"restaurant"} style={{ marginBottom: 0 }}>
+              <Form.Item name={"tenantId"} style={{ marginBottom: 0 }}>
                 <Select
                   style={{ width: "100%" }}
                   placeholder="Select Restaurant"
@@ -73,11 +72,12 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
             </Col>
             <Col span={6}>
               <Space>
-                <Switch
-                  title="Show only published"
-                  defaultChecked
-                  onChange={() => {}}
-                ></Switch>
+                <Form.Item name={"isPublish"}>
+                  <Switch
+                    title="Show only published"
+                    onChange={() => {}}
+                  ></Switch>
+                </Form.Item>
                 <Typography.Text>Show only published</Typography.Text>
               </Space>
             </Col>
