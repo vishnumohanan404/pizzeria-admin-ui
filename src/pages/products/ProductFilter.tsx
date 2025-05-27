@@ -78,12 +78,11 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
             <Col span={6}>
               <Space>
                 <Form.Item name={"isPublish"}>
-                  <Switch
-                    title="Show only published"
-                    onChange={() => {}}
-                  ></Switch>
+                  <Switch onChange={() => {}}></Switch>
                 </Form.Item>
-                <Typography.Text>Show only published</Typography.Text>
+                <Typography.Text style={{ marginBottom: 22, display: "block" }}>
+                  Show only published
+                </Typography.Text>
               </Space>
             </Col>
           </Row>
