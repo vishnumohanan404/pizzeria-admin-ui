@@ -11,8 +11,11 @@ export const self = () => api.get(`${AUTH_SERVICE}/auth/self`);
 export const logout = () => api.post(`${AUTH_SERVICE}/auth/logout`);
 export const getUsers = (queryString: string) =>
   api.get(`${AUTH_SERVICE}/users?${queryString}`);
-export const getTenants = () => api.get(`${AUTH_SERVICE}/tenants`);
+export const getTenants = (queryString: string) =>
+  api.get(`${AUTH_SERVICE}/tenants?${queryString}`);
 export const createUser = (user: CreateUserData) =>
   api.post(`${AUTH_SERVICE}/users`, user);
 export const updateUser = (user: CreateUserData, id: string) =>
   api.patch(`${AUTH_SERVICE}/users/${id}`, user);
+
+export const getCategories = () => api.get(`${CATALOG_SERVICE}/categories`);

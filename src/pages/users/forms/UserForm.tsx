@@ -9,7 +9,8 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
   const { data: tenants } = useQuery({
     queryKey: ["tenants"],
     queryFn: () => {
-      return getTenants().then((res) => res.data);
+      // todo: make this dynamic, like search for tenants in the input
+      return getTenants(`perPage=100&currentPage=1`).then((res) => res.data);
     },
   });
   return (
