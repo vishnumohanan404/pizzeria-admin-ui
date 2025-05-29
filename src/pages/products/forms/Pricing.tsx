@@ -5,7 +5,6 @@ type PricingProps = {
   selectedCategory: string;
 };
 const Pricing = ({ selectedCategory }: PricingProps) => {
-  console.log("selectedCategory :>> ", selectedCategory);
   const category: Category | null = selectedCategory
     ? JSON.parse(selectedCategory)
     : null; // Assuming selectedCategory is a string ID, you might need to fetch the category details based on this ID
