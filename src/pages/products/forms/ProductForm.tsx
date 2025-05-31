@@ -2,6 +2,7 @@ import {
   Card,
   Col,
   Form,
+  FormInstance,
   Input,
   Row,
   Select,
@@ -17,7 +18,7 @@ import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
 import { useAuthStore } from "../../../store";
 
-const ProductForm = () => {
+const ProductForm = ({ form }: { form: FormInstance }) => {
   const { user } = useAuthStore();
   const selectedCategory = Form.useWatch("categoryId");
   const { data: categories } = useQuery({
@@ -73,10 +74,7 @@ const ProductForm = () => {
                     size="large"
                   >
                     {categories?.data.map((category: Category) => (
-                      <Select.Option
-                        key={category._id}
-                        value={JSON.stringify(category)}
-                      >
+                      <Select.Option key={category._id} value={category._id}>
                         {category.name}
                       </Select.Option>
                     ))}
@@ -108,7 +106,7 @@ const ProductForm = () => {
           <Card title="Product Image" variant="borderless">
             <Row gutter={20}>
               <Col span={12}>
-                <ProductImage />
+                <ProductImage initialImage={form.getFieldValue("image")} />
               </Col>
             </Row>
           </Card>
@@ -134,7 +132,10 @@ const ProductForm = () => {
                       size="large"
                     >
                       {restaurants?.data?.map((tenant: Tenant) => (
-                        <Select.Option key={tenant.id} value={tenant.id}>
+                        <Select.Option
+                          value={String(tenant.id)}
+                          key={tenant.id}
+                        >
                           {tenant.name}
                         </Select.Option>
                       ))}

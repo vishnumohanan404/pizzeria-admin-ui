@@ -1,22 +1,30 @@
 import { Card, Col, Form, InputNumber, Row, Space, Typography } from "antd";
 import { Category } from "../../../types";
+import { useQuery } from "@tanstack/react-query";
+import { getCategory } from "../../../http/api";
 
 type PricingProps = {
   selectedCategory: string;
 };
 const Pricing = ({ selectedCategory }: PricingProps) => {
-  const category: Category | null = selectedCategory
-    ? JSON.parse(selectedCategory)
-    : null; // Assuming selectedCategory is a string ID, you might need to fetch the category details based on this ID
-  if (!category) {
+  const { data: fetchedCategory } = useQuery<Category>({
+    queryKey: ["category", selectedCategory],
+    queryFn: async () => {
+      return await getCategory(selectedCategory).then((res) => res.data);
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  if (!fetchedCategory) {
     return null;
   }
+
   return (
     <Card
       title={<Typography.Text>Product Price</Typography.Text>}
       variant="borderless"
     >
-      {Object.entries(category?.priceConfiguration).map(
+      {Object.entries(fetchedCategory?.priceConfiguration).map(
         ([configurationKey, configurationValue]) => {
           return (
             <div key={configurationKey}>
