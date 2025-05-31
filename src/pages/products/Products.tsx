@@ -187,6 +187,10 @@ const Products = () => {
       priceConfiguration: pricing,
       categoryId: categoryId,
       attributes: attributes,
+      tenantId:
+        user!.role === "manager"
+          ? user?.tenant?.id
+          : form.getFieldValue("tenantId"),
     };
     const formData = makeFormData(postData);
     await productMutate(formData);

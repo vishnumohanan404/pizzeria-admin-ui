@@ -15,8 +15,10 @@ import { getCategories, getTenants } from "../../../http/api";
 import Pricing from "./Pricing";
 import Attributes from "./Attributes";
 import ProductImage from "./ProductImage";
+import { useAuthStore } from "../../../store";
 
 const ProductForm = () => {
+  const { user } = useAuthStore();
   const selectedCategory = Form.useWatch("categoryId");
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -110,36 +112,39 @@ const ProductForm = () => {
               </Col>
             </Row>
           </Card>
-          <Card title="Tenant Info" variant="borderless">
-            <Row gutter={20}>
-              <Col span={12}>
-                <Form.Item
-                  label="Restaurant"
-                  name="tenantId"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Restaurant is required",
-                    },
-                  ]}
-                >
-                  <Select
-                    style={{ width: "100%" }}
-                    allowClear={true}
-                    onChange={() => {}}
-                    placeholder="Select Restaurant"
-                    size="large"
+          {user?.role !== "manager" && (
+            <Card title="Tenant Info" variant="borderless">
+              <Row gutter={20}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Restaurant"
+                    name="tenantId"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Restaurant is required",
+                      },
+                    ]}
                   >
-                    {restaurants?.data?.map((tenant: Tenant) => (
-                      <Select.Option key={tenant.id} value={tenant.id}>
-                        {tenant.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+                    <Select
+                      style={{ width: "100%" }}
+                      allowClear={true}
+                      onChange={() => {}}
+                      placeholder="Select Restaurant"
+                      size="large"
+                    >
+                      {restaurants?.data?.map((tenant: Tenant) => (
+                        <Select.Option key={tenant.id} value={tenant.id}>
+                          {tenant.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
+
           {selectedCategory && <Pricing selectedCategory={selectedCategory} />}
           {selectedCategory && (
             <Attributes selectedCategory={selectedCategory} />
