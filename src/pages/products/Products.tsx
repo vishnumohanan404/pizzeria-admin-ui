@@ -20,14 +20,20 @@ import {
 import { Link } from "react-router-dom";
 import ProductFilter from "./ProductFilter";
 import { FieldData, Product } from "../../types";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getProducts } from "../../http/api";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { createProduct, getProducts } from "../../http/api";
 import { PER_PAGE } from "../../constants";
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { debounce } from "lodash";
 import { useAuthStore } from "../../store";
 import ProductForm from "./forms/ProductForm";
+import { makeFormData } from "./forms/helpers";
 
 const columns = [
   {
@@ -119,7 +125,6 @@ const Products = () => {
     }, 500);
   }, []);
   const onFilterChange = async (changedFields: FieldData[]) => {
-    console.log(changedFields);
     const changedFilterFields = changedFields
       .map((item) => ({
         [item.name[0]]: item.value,
@@ -136,8 +141,55 @@ const Products = () => {
     }
   };
 
-  const onHandleSubmit = () => {
-    console.log("Form submitted");
+  const queryClient = useQueryClient();
+  const { mutate: productMutate } = useMutation({
+    mutationKey: ["product"],
+    mutationFn: async (data: FormData) =>
+      createProduct(data).then((res) => res.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      form.resetFields();
+      setDrawerOpen(false);
+      return;
+    },
+  });
+
+  const onHandleSubmit = async () => {
+    await form.validateFields();
+    const priceConfiguration = form.getFieldValue("priceConfiguration");
+    const pricing = Object.entries(priceConfiguration).reduce(
+      (acc, [key, value]) => {
+        const parsedKey = JSON.parse(key);
+        return {
+          ...acc,
+          [parsedKey.configurationKey]: {
+            priceType: parsedKey.priceType,
+            availableOptions: value,
+          },
+        };
+      },
+      {}
+    );
+    const categoryId = JSON.parse(form.getFieldValue("categoryId"))._id;
+    const attributes = Object.entries(form.getFieldValue("attributes")).map(
+      ([key, value]) => {
+        return {
+          name: key,
+          value: value,
+        };
+      }
+    );
+
+    const postData = {
+      ...form.getFieldsValue(),
+      isPublish: form.getFieldValue("isPublish") ? true : false,
+      image: form.getFieldValue("image"),
+      priceConfiguration: pricing,
+      categoryId: categoryId,
+      attributes: attributes,
+    };
+    const formData = makeFormData(postData);
+    await productMutate(formData);
   };
 
   return (
@@ -181,7 +233,7 @@ const Products = () => {
             ...columns,
             {
               title: "Actions",
-              render: (_: string, record: Product) => {
+              render: (_: string, _record: Product) => {
                 return (
                   <Space>
                     <Button type="link" onClick={() => {}}>
