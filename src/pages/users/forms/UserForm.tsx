@@ -132,7 +132,7 @@ const UserForm = ({ isEditMode = false }: { isEditMode: boolean }) => {
                       placeholder="Select Restaurant"
                       size="large"
                     >
-                      {tenants?.map((tenant: Tenant) => (
+                      {tenants.data?.map((tenant: Tenant) => (
                         <Select.Option key={tenant.id} value={tenant.id}>
                           {tenant.name}
                         </Select.Option>

@@ -73,7 +73,7 @@ const Tenants = () => {
           </Button>
         </TenantFilter>
 
-        <Table columns={columns} dataSource={tenants} rowKey={"id"} />
+        <Table columns={columns} dataSource={tenants?.data} rowKey={"id"} />
 
         <Drawer
           title="Create restaurant"

@@ -131,7 +131,7 @@ const ProductForm = ({ form }: { form: FormInstance }) => {
                       placeholder="Select Restaurant"
                       size="large"
                     >
-                      {restaurants?.data?.map((tenant: Tenant) => (
+                      {restaurants?.data.data.map((tenant: Tenant) => (
                         <Select.Option
                           value={String(tenant.id)}
                           key={tenant.id}

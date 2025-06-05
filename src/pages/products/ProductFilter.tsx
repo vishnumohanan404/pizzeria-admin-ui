@@ -65,7 +65,7 @@ const ProductFilter = ({ children }: ProductsFilterProps) => {
                     placeholder="Select Restaurant"
                     allowClear={true}
                   >
-                    {restaurants?.data.map((restaurant: Tenant) => (
+                    {restaurants?.data.data.map((restaurant: Tenant) => (
                       <Select.Option key={restaurant.id} value={restaurant.id}>
                         {restaurant.name}
                       </Select.Option>
